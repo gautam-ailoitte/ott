@@ -1,9 +1,11 @@
+// lib/src/presentation/cubits/home_cubit/home_cubit.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/models/video_model.dart';
 import '../../../domain/entities/home_data_entity.dart';
 import '../../../domain/entities/user_progress_entity.dart';
+import '../../../domain/entities/video_entity.dart';
 import '../../../domain/repositories/video_repository.dart';
 
 part 'home_state.dart';
@@ -126,6 +128,82 @@ class HomeCubit extends Cubit<HomeState> {
     } catch (error) {
       debugPrint('Failed to get playlist videos: $error');
       return [];
+    }
+  }
+
+  /// ✅ NEW: Convert VideoEntity list to VideoModel list for navigation
+  Future<List<VideoModel>> convertVideosForPlayer(
+    List<VideoEntity> videoEntities,
+  ) async {
+    final List<VideoModel> videoModels = [];
+
+    for (final entity in videoEntities) {
+      if (entity.id != null) {
+        try {
+          final videoModel = await _videoRepository.getVideoById(entity.id!);
+          if (videoModel != null) {
+            videoModels.add(videoModel);
+          }
+        } catch (e) {
+          debugPrint('Failed to convert video ${entity.id}: $e');
+          // Continue with other videos instead of failing completely
+        }
+      }
+    }
+
+    return videoModels;
+  }
+
+  /// ✅ NEW: Get videos from specific carousel for playlist navigation
+  Future<List<VideoModel>> getCarouselVideosForPlayer(String carouselId) async {
+    try {
+      if (state is HomeLoaded) {
+        final homeData = (state as HomeLoaded).homeData;
+        final carousel = homeData.carousels?.firstWhere(
+          (c) => c.id == carouselId,
+          orElse: () => throw Exception('Carousel not found'),
+        );
+
+        if (carousel?.videos != null) {
+          return await convertVideosForPlayer(carousel!.videos!);
+        }
+      }
+      return [];
+    } catch (error) {
+      debugPrint('Failed to get carousel videos for player: $error');
+      return [];
+    }
+  }
+
+  /// ✅ NEW: Enhanced method to get video with context (includes related videos)
+  Future<Map<String, dynamic>> getVideoWithContext(String videoId) async {
+    try {
+      final videoModel = await getVideoForPlayer(videoId);
+      if (videoModel == null) {
+        return {'video': null, 'playlist': <VideoModel>[]};
+      }
+
+      // Try to find related videos from the same category/carousel
+      List<VideoModel> relatedVideos = [];
+
+      if (state is HomeLoaded) {
+        final homeData = (state as HomeLoaded).homeData;
+
+        // Find the carousel containing this video
+        for (final carousel in homeData.carousels ?? <dynamic>[]) {
+          final containsVideo =
+              carousel.videos?.any((v) => v.id == videoId) == true;
+          if (containsVideo && carousel.videos != null) {
+            relatedVideos = await convertVideosForPlayer(carousel.videos!);
+            break;
+          }
+        }
+      }
+
+      return {'video': videoModel, 'playlist': relatedVideos};
+    } catch (error) {
+      debugPrint('Failed to get video with context: $error');
+      return {'video': null, 'playlist': <VideoModel>[]};
     }
   }
 
