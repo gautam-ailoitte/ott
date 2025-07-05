@@ -1,4 +1,6 @@
 // lib/src/presentation/screens/video_player/video_player_screen.dart
+import 'dart:developer';
+
 import 'package:better_player_plus/better_player_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -29,6 +31,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   @override
   void initState() {
     super.initState();
+    log('VideoPlayerScreen initialized with ${widget.videos.length} videos');
+    log(widget.videos.map((v) => v.title).toString());
+    log(widget.videos.toString());
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: _currentIndex);
 
