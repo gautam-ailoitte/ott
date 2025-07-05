@@ -4,7 +4,6 @@ import 'package:ott/src/data/datasources/user_datasource.dart';
 import 'package:ott/src/data/repositories/video_repository_impl.dart';
 import 'package:ott/src/domain/repositories/video_repository.dart';
 import 'package:ott/src/presentation/cubits/home_cubit/home_cubit.dart';
-import 'package:ott/src/presentation/cubits/video_player_cubit/video_player_cubit.dart';
 
 /// Service locator instance
 final sl = GetIt.instance;
@@ -23,7 +22,6 @@ Future<void> init() async {
 
   //===== Cubits (Factory registration for multiple instances) =====
   sl.registerFactory(() => HomeCubit(sl<VideoRepository>()));
-  sl.registerFactory(() => VideoPlayerCubit(sl<VideoRepository>()));
 
   //===== Future: Services (when needed) =====
   // sl.registerLazySingleton<VideoLifecycleService>(() => VideoLifecycleService());

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../data/models/video_model.dart';
 import '../../../domain/entities/home_data_entity.dart';
 import '../../../domain/entities/user_progress_entity.dart';
-import '../../../domain/entities/video_entity.dart';
 import '../../../domain/repositories/video_repository.dart';
 
 part 'home_state.dart';
@@ -39,7 +39,7 @@ class HomeCubit extends Cubit<HomeState> {
     await loadHomeData();
   }
 
-  /// Load videos for specific category
+  /// Load videos for specific category - Returns VideoModel for Better Player
   Future<void> loadCategoryVideos(String categoryId) async {
     try {
       final videos = await _videoRepository.getVideosByCategory(categoryId);
@@ -62,7 +62,7 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
-  /// Load recently played videos
+  /// Load recently played videos with full VideoModel data
   Future<void> loadRecentlyPlayedVideos() async {
     try {
       final recentVideos = await _videoRepository.getRecentlyPlayedVideos();
@@ -106,6 +106,26 @@ class HomeCubit extends Cubit<HomeState> {
     } catch (error) {
       // Silent fail for progress update
       debugPrint('Failed to update video progress: $error');
+    }
+  }
+
+  /// Get video by ID with full VideoModel data for player
+  Future<VideoModel?> getVideoForPlayer(String videoId) async {
+    try {
+      return await _videoRepository.getVideoById(videoId);
+    } catch (error) {
+      debugPrint('Failed to get video for player: $error');
+      return null;
+    }
+  }
+
+  /// Get playlist videos for reels-style navigation
+  Future<List<VideoModel>> getPlaylistVideos(String playlistId) async {
+    try {
+      return await _videoRepository.getPlaylistVideos(playlistId);
+    } catch (error) {
+      debugPrint('Failed to get playlist videos: $error');
+      return [];
     }
   }
 

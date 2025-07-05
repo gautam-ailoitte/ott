@@ -1,7 +1,6 @@
 import '../../domain/entities/home_data_entity.dart';
 import '../../domain/entities/user_progress_entity.dart';
 import '../../domain/entities/video_catalog_entity.dart';
-import '../../domain/entities/video_entity.dart';
 import '../../domain/repositories/video_repository.dart';
 import '../datasources/mock_video_datasource.dart';
 import '../datasources/user_datasource.dart';
@@ -42,7 +41,7 @@ class VideoRepositoryImpl implements VideoRepository {
   }
 
   @override
-  Future<List<VideoEntity>> getVideosByCategory(String category) async {
+  Future<List<VideoModel>> getVideosByCategory(String category) async {
     try {
       final jsonData = await _mockDataSource.loadMockData();
       final carousels = jsonData['carousels'] as List<dynamic>;
@@ -66,7 +65,7 @@ class VideoRepositoryImpl implements VideoRepository {
   }
 
   @override
-  Future<VideoEntity?> getVideoById(String id) async {
+  Future<VideoModel?> getVideoById(String id) async {
     try {
       final jsonData = await _mockDataSource.loadMockData();
 
@@ -88,18 +87,25 @@ class VideoRepositoryImpl implements VideoRepository {
       final featuredContent =
           jsonData['featured_content'] as Map<String, dynamic>?;
       if (featuredContent?['id'] == id) {
-        return VideoModel.fromJson({
+        // Convert featured content to video format
+        final videoData = {
           'id': featuredContent!['id'],
           'title': featuredContent['title'],
           'description': featuredContent['description'],
           'thumbnail_url': featuredContent['thumbnail_url'],
-          'video_url': featuredContent['video_url'],
           'duration': featuredContent['duration'],
           'category': featuredContent['category'],
           'rating': featuredContent['rating'],
           'release_year': featuredContent['release_year'],
           'content_type': featuredContent['content_type'],
-        });
+          // Handle both old and new video sources format
+          if (featuredContent['video_sources'] != null)
+            'video_sources': featuredContent['video_sources']
+          else if (featuredContent['video_url'] != null)
+            'video_url': featuredContent['video_url'],
+        };
+
+        return VideoModel.fromJson(videoData);
       }
 
       return null;
@@ -127,7 +133,7 @@ class VideoRepositoryImpl implements VideoRepository {
   }
 
   @override
-  Future<List<VideoEntity>> getPlaylistVideos(String playlistId) async {
+  Future<List<VideoModel>> getPlaylistVideos(String playlistId) async {
     try {
       final jsonData = await _mockDataSource.loadMockData();
       final playlists =
@@ -140,7 +146,7 @@ class VideoRepositoryImpl implements VideoRepository {
       final videoIds = List<String>.from(
         playlists[playlistId] as List<dynamic>,
       );
-      final videos = <VideoEntity>[];
+      final videos = <VideoModel>[];
 
       for (final videoId in videoIds) {
         final video = await getVideoById(videoId);
@@ -197,10 +203,10 @@ class VideoRepositoryImpl implements VideoRepository {
   }
 
   @override
-  Future<List<VideoEntity>> getRecentlyPlayedVideos() async {
+  Future<List<VideoModel>> getRecentlyPlayedVideos() async {
     try {
       final videoIds = _userDataSource.getContinueWatchingVideoIds();
-      final videos = <VideoEntity>[];
+      final videos = <VideoModel>[];
 
       for (final videoId in videoIds) {
         final video = await getVideoById(videoId);
@@ -215,22 +221,25 @@ class VideoRepositoryImpl implements VideoRepository {
               lastWatched: progress.lastWatched,
             );
 
-            videos.add(
-              VideoModel(
-                id: video.id,
-                title: video.title,
-                description: video.description,
-                thumbnailUrl: video.thumbnailUrl,
-                videoUrl: video.videoUrl,
-                duration: video.duration,
-                category: video.category,
-                rating: video.rating,
-                releaseYear: video.releaseYear,
-                contentType: video.contentType,
-                thumbnailAspectRatio: video.thumbnailAspectRatio,
-                progressData: progressData,
-              ),
+            // Create VideoModel with progress data
+            final videoWithProgress = VideoModel(
+              id: video.id,
+              title: video.title,
+              description: video.description,
+              thumbnailUrl: video.thumbnailUrl,
+              videoUrl: video.videoUrl,
+              duration: video.duration,
+              category: video.category,
+              rating: video.rating,
+              releaseYear: video.releaseYear,
+              contentType: video.contentType,
+              thumbnailAspectRatio: video.thumbnailAspectRatio,
+              progressData: progressData,
+              // 🎯 IMPORTANT: Preserve video sources for Better Player
+              videoSources: video.videoSources,
             );
+
+            videos.add(videoWithProgress);
           } else {
             videos.add(video);
           }
@@ -240,6 +249,108 @@ class VideoRepositoryImpl implements VideoRepository {
       return videos;
     } catch (e) {
       throw Exception('Failed to load recently played videos: $e');
+    }
+  }
+
+  // 🎯 NEW: Additional helper methods for Better Player integration
+
+  /// Get all videos from all carousels for reels-style navigation
+  Future<List<VideoModel>> getAllVideos() async {
+    try {
+      final jsonData = await _mockDataSource.loadMockData();
+      final carousels = jsonData['carousels'] as List<dynamic>;
+      final allVideos = <VideoModel>[];
+
+      for (final carouselData in carousels) {
+        final carousel = carouselData as Map<String, dynamic>;
+        final videos = carousel['videos'] as List<dynamic>;
+
+        final carouselVideos = videos
+            .map((video) => VideoModel.fromJson(video as Map<String, dynamic>))
+            .toList();
+
+        allVideos.addAll(carouselVideos);
+      }
+
+      // Also add featured content if it exists
+      final featuredContent =
+          jsonData['featured_content'] as Map<String, dynamic>?;
+      if (featuredContent != null) {
+        final featuredVideo = VideoModel.fromJson({
+          'id': featuredContent['id'],
+          'title': featuredContent['title'],
+          'description': featuredContent['description'],
+          'thumbnail_url': featuredContent['thumbnail_url'],
+          'duration': featuredContent['duration'],
+          'category': featuredContent['category'],
+          'rating': featuredContent['rating'],
+          'release_year': featuredContent['release_year'],
+          'content_type': featuredContent['content_type'],
+          if (featuredContent['video_sources'] != null)
+            'video_sources': featuredContent['video_sources']
+          else if (featuredContent['video_url'] != null)
+            'video_url': featuredContent['video_url'],
+        });
+
+        // Add featured content at the beginning
+        allVideos.insert(0, featuredVideo);
+      }
+
+      return allVideos;
+    } catch (e) {
+      throw Exception('Failed to load all videos: $e');
+    }
+  }
+
+  /// Get videos for a specific category with Better Player optimization
+  Future<List<VideoModel>> getCategoryVideosOptimized(String categoryId) async {
+    try {
+      final videos = await getVideosByCategory(categoryId);
+
+      // Sort by priority or rating for better user experience
+      videos.sort((a, b) {
+        final ratingA = a.rating ?? 0.0;
+        final ratingB = b.rating ?? 0.0;
+        return ratingB.compareTo(ratingA); // Highest rating first
+      });
+
+      return videos;
+    } catch (e) {
+      throw Exception('Failed to load optimized category videos: $e');
+    }
+  }
+
+  /// Get video with progress data for continue watching
+  Future<VideoModel?> getVideoWithProgress(String videoId) async {
+    try {
+      final video = await getVideoById(videoId);
+      if (video == null) return null;
+
+      final progress = _userDataSource.getVideoProgress(videoId);
+      if (progress == null) return video;
+
+      // Return video with progress data
+      return VideoModel(
+        id: video.id,
+        title: video.title,
+        description: video.description,
+        thumbnailUrl: video.thumbnailUrl,
+        videoUrl: video.videoUrl,
+        duration: video.duration,
+        category: video.category,
+        rating: video.rating,
+        releaseYear: video.releaseYear,
+        contentType: video.contentType,
+        thumbnailAspectRatio: video.thumbnailAspectRatio,
+        videoSources: video.videoSources,
+        progressData: ProgressDataModel(
+          currentPosition: progress.currentPosition,
+          progressPercentage: progress.progressPercentage,
+          lastWatched: progress.lastWatched,
+        ),
+      );
+    } catch (e) {
+      throw Exception('Failed to load video with progress: $e');
     }
   }
 }

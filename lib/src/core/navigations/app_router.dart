@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../domain/entities/video_entity.dart';
 import '../../presentation/screens/home/home.dart';
 import '../../presentation/screens/video_player/video_player_screen.dart';
 import '../../presentation/splash/splash_screen.dart';
@@ -23,13 +24,16 @@ class AppRouter {
         if (args == null) {
           return _buildErrorRoute('Video player arguments missing');
         }
+        final List<VideoEntity> videos = args.playlist?.isNotEmpty == true
+            ? args.playlist!
+            : [args.video];
+
+        // Determine the starting index. If a playlist is provided, use the
+        // currentIndex from arguments. Otherwise, it's the first (and only) video.
+        final int initialIndex = args.currentIndex ?? 0;
         return _buildRoute(
-          VideoPlayerScreen(
-            video: args.video,
-            playlist: args.playlist,
-            currentIndex: args.currentIndex,
-            playlistContext: args.playlistContext,
-          ),
+          // Use the new constructor with the prepared videos list and initial index
+          VideoPlayerScreen(videos: videos, initialIndex: initialIndex),
           settings: settings,
           fullscreenDialog: true,
         );

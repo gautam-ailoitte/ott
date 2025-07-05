@@ -2,8 +2,8 @@
   "app_metadata": {
     "version": "1.0.0",
     "last_updated": "2025-01-15T10:00:00Z",
-    "total_videos": 18,
-    "total_carousels": 5
+    "total_videos": 12,
+    "total_carousels": 4
   },
 
   "user_state": {
@@ -13,25 +13,17 @@
         {
           "video_id": "vid_001",
           "last_watched": "2025-01-15T09:45:00Z",
-          "current_position": 240,
+          "current_position": 45,
           "total_duration": 596,
-          "progress_percentage": 40.3,
+          "progress_percentage": 7.5,
           "watch_status": "in_progress"
         },
         {
-          "video_id": "vid_003",
+          "video_id": "vid_002",
           "last_watched": "2025-01-15T08:20:00Z",
-          "current_position": 450,
+          "current_position": 120,
           "total_duration": 653,
-          "progress_percentage": 68.9,
-          "watch_status": "in_progress"
-        },
-        {
-          "video_id": "vid_007",
-          "last_watched": "2025-01-14T22:15:00Z",
-          "current_position": 12,
-          "total_duration": 15,
-          "progress_percentage": 80.0,
+          "progress_percentage": 18.4,
           "watch_status": "in_progress"
         }
       ]
@@ -40,11 +32,23 @@
 
   "featured_content": {
     "id": "featured_001",
-    "title": "Big Buck Bunny: The Adventure",
-    "description": "Follow the adventures of a giant rabbit as he encounters three bullying rodents. A delightful animated short that showcases stunning visuals and heartwarming storytelling.",
-    "thumbnail_url": "https://picsum.photos/400/600?random=featured",
-    "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-    "backdrop_url": "https://picsum.photos/800/450?random=backdrop1",
+    "title": "Big Buck Bunny",
+    "description": "Follow the big-hearted bunny as he encounters three bullying rodents in this delightful animated adventure.",
+    "thumbnail_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg",
+    "video_sources": {
+      "hls_manifest": "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8",
+      "progressive": [
+        {
+          "quality": "360p",
+          "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+        },
+        {
+          "quality": "720p",
+          "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+        }
+      ]
+    },
+    "backdrop_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg",
     "duration": 596,
     "category": "animation",
     "rating": 8.5,
@@ -59,58 +63,66 @@
       "subtitle": "Pick up where you left off",
       "display_type": "horizontal_scroll",
       "priority": 0,
-      "thumbnail_style": "landscape_with_progress",
+      "thumbnail_style": "landscape",
       "show_progress_bar": true,
       "videos": [
         {
           "id": "vid_001",
           "title": "Big Buck Bunny",
-          "description": "A large and lovable rabbit deals with three tiny bullies, led by a flying squirrel, who are determined to squelch his happiness.",
-          "thumbnail_url": "https://picsum.photos/300/169?random=1",
-          "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+          "description": "A large and lovable rabbit deals with three tiny bullies, led by a flying squirrel.",
+          "thumbnail_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg",
+          "video_sources": {
+            "hls_manifest": "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8",
+            "progressive": [
+              {
+                "quality": "360p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+              },
+              {
+                "quality": "720p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+              }
+            ]
+          },
           "duration": 596,
           "category": "animation",
           "rating": 8.5,
           "release_year": 2024,
           "content_type": "movie",
+          "thumbnail_aspect_ratio": "landscape",
           "progress_data": {
-            "current_position": 240,
-            "progress_percentage": 40.3,
+            "current_position": 45,
+            "progress_percentage": 7.5,
             "last_watched": "2025-01-15T09:45:00Z"
           }
         },
         {
-          "id": "vid_003",
+          "id": "vid_002",
           "title": "Elephant's Dream",
-          "description": "A surreal journey through a strange world where two friends explore the boundaries of imagination and reality.",
-          "thumbnail_url": "https://picsum.photos/300/169?random=3",
-          "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+          "description": "Two friends explore the boundaries of imagination in this surreal journey.",
+          "thumbnail_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg",
+          "video_sources": {
+            "progressive": [
+              {
+                "quality": "360p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+              },
+              {
+                "quality": "720p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+              }
+            ]
+          },
           "duration": 653,
           "category": "animation",
           "rating": 7.8,
           "release_year": 2024,
           "content_type": "movie",
+          "thumbnail_aspect_ratio": "landscape",
           "progress_data": {
-            "current_position": 450,
-            "progress_percentage": 68.9,
+            "current_position": 120,
+            "progress_percentage": 18.4,
             "last_watched": "2025-01-15T08:20:00Z"
-          }
-        },
-        {
-          "id": "vid_007",
-          "title": "For Bigger Blazes",
-          "description": "Witness the power and beauty of nature's most spectacular phenomena in this breathtaking visual experience.",
-          "thumbnail_url": "https://picsum.photos/300/169?random=7",
-          "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-          "duration": 15,
-          "category": "documentary",
-          "rating": 8.0,
-          "release_year": 2024,
-          "content_type": "short",
-          "progress_data": {
-            "current_position": 12,
-            "progress_percentage": 80.0,
-            "last_watched": "2025-01-14T22:15:00Z"
           }
         }
       ]
@@ -125,397 +137,318 @@
       "show_progress_bar": false,
       "videos": [
         {
-          "id": "vid_002",
+          "id": "vid_003",
           "title": "Sintel",
-          "description": "A lonely young woman, Sintel, helps and befriends a dragon, whom she calls Scales. But when he is kidnapped by an adult dragon, Sintel decides to embark on a dangerous quest to find her lost friend Scales.",
-          "thumbnail_url": "https://picsum.photos/300/169?random=2",
-          "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+          "description": "A lonely young woman helps and befriends a dragon in this heartwarming tale.",
+          "thumbnail_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/Sintel.jpg",
+          "video_sources": {
+            "hls_manifest": "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8",
+            "progressive": [
+              {
+                "quality": "360p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
+              },
+              {
+                "quality": "720p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
+              }
+            ]
+          },
           "duration": 888,
           "category": "animation",
           "rating": 8.9,
           "release_year": 2024,
-          "content_type": "movie"
+          "content_type": "movie",
+          "thumbnail_aspect_ratio": "landscape"
         },
         {
           "id": "vid_004",
-          "title": "Tears of Steel",
-          "description": "In a post-apocalyptic world, a group of rebels fight against robots to save humanity's future.",
-          "thumbnail_url": "https://picsum.photos/300/169?random=4",
-          "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-          "duration": 734,
-          "category": "sci-fi",
+          "title": "For Bigger Blazes",
+          "description": "Experience the thrill of extreme adventure and blazing action.",
+          "thumbnail_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg",
+          "video_sources": {
+            "progressive": [
+              {
+                "quality": "360p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+              },
+              {
+                "quality": "720p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+              }
+            ]
+          },
+          "duration": 15,
+          "category": "action",
           "rating": 8.7,
           "release_year": 2024,
-          "content_type": "movie"
+          "content_type": "movie",
+          "thumbnail_aspect_ratio": "landscape"
         },
         {
           "id": "vid_005",
-          "title": "VolksWagen GTI Review",
-          "description": "An in-depth look at the iconic VolksWagen GTI, exploring its performance, design, and driving experience.",
-          "thumbnail_url": "https://picsum.photos/300/169?random=5",
-          "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4",
-          "duration": 25,
-          "category": "automotive",
-          "rating": 8.1,
+          "title": "For Bigger Joyrides",
+          "description": "High-speed adventure and extreme joyrides that will get your adrenaline pumping.",
+          "thumbnail_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerJoyrides.jpg",
+          "video_sources": {
+            "progressive": [
+              {
+                "quality": "360p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+              },
+              {
+                "quality": "720p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+              }
+            ]
+          },
+          "duration": 15,
+          "category": "action",
+          "rating": 8.4,
           "release_year": 2024,
-          "content_type": "review"
-        },
-        {
-          "id": "vid_006",
-          "title": "We Are Going On Bullrun",
-          "description": "Join the ultimate road trip adventure as enthusiasts embark on an epic journey across stunning landscapes.",
-          "thumbnail_url": "https://picsum.photos/300/169?random=6",
-          "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
-          "duration": 30,
-          "category": "adventure",
-          "rating": 7.9,
-          "release_year": 2024,
-          "content_type": "documentary"
+          "content_type": "movie",
+          "thumbnail_aspect_ratio": "landscape"
         }
       ]
     },
     {
-      "id": "popular_movies",
-      "title": "Popular Movies",
-      "subtitle": "Blockbusters everyone loves",
+      "id": "action_movies",
+      "title": "Action Movies",
+      "subtitle": "Adrenaline-pumping adventures",
       "display_type": "horizontal_scroll",
       "priority": 2,
       "thumbnail_style": "portrait",
       "show_progress_bar": false,
       "videos": [
         {
-          "id": "vid_008",
-          "title": "For Bigger Escape",
-          "description": "Sometimes the biggest adventures come in the smallest packages. Experience the thrill of the great escape.",
-          "thumbnail_url": "https://picsum.photos/200/300?random=8",
-          "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-          "duration": 15,
-          "category": "adventure",
-          "rating": 8.3,
-          "release_year": 2024,
-          "content_type": "short"
-        },
-        {
-          "id": "vid_009",
-          "title": "For Bigger Fun",
-          "description": "Life is better when you're having fun. Join us for an adventure that will make you smile from ear to ear.",
-          "thumbnail_url": "https://picsum.photos/200/300?random=9",
-          "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-          "duration": 60,
-          "category": "comedy",
-          "rating": 8.0,
-          "release_year": 2024,
-          "content_type": "short"
-        },
-        {
-          "id": "vid_010",
-          "title": "For Bigger Joyrides",
-          "description": "Get ready for the ride of your life. Buckle up for non-stop action and breathtaking stunts.",
-          "thumbnail_url": "https://picsum.photos/200/300?random=10",
-          "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+          "id": "vid_006",
+          "title": "For Bigger Escapes",
+          "description": "Epic escape sequences and heart-stopping action.",
+          "thumbnail_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerEscapes.jpg",
+          "video_sources": {
+            "progressive": [
+              {
+                "quality": "360p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+              },
+              {
+                "quality": "720p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+              }
+            ]
+          },
           "duration": 15,
           "category": "action",
-          "rating": 8.4,
+          "rating": 8.2,
           "release_year": 2024,
-          "content_type": "short"
+          "content_type": "movie",
+          "thumbnail_aspect_ratio": "portrait"
         },
         {
-          "id": "vid_011",
+          "id": "vid_007",
           "title": "For Bigger Meltdowns",
-          "description": "When the pressure builds up, sometimes you just have to let it all out. A dramatic exploration of human emotions.",
-          "thumbnail_url": "https://picsum.photos/200/300?random=11",
-          "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+          "description": "Intense action sequences that will keep you on the edge of your seat.",
+          "thumbnail_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerMeltdowns.jpg",
+          "video_sources": {
+            "progressive": [
+              {
+                "quality": "360p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
+              },
+              {
+                "quality": "720p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
+              }
+            ]
+          },
           "duration": 15,
-          "category": "drama",
-          "rating": 7.8,
+          "category": "action",
+          "rating": 8.0,
           "release_year": 2024,
-          "content_type": "short"
+          "content_type": "movie",
+          "thumbnail_aspect_ratio": "portrait"
+        },
+        {
+          "id": "vid_008",
+          "title": "We Are Going On Bullrun",
+          "description": "Join the ultimate high-speed adventure and adrenaline rush.",
+          "thumbnail_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/WeAreGoingOnBullrun.jpg",
+          "video_sources": {
+            "progressive": [
+              {
+                "quality": "360p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4"
+              },
+              {
+                "quality": "720p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4"
+              }
+            ]
+          },
+          "duration": 15,
+          "category": "action",
+          "rating": 8.1,
+          "release_year": 2024,
+          "content_type": "movie",
+          "thumbnail_aspect_ratio": "portrait"
         }
       ]
     },
     {
-      "id": "action_collection",
-      "title": "Action Collection",
-      "subtitle": "Heart-pounding adventures",
+      "id": "documentaries",
+      "title": "Documentaries",
+      "subtitle": "Real stories, real impact",
       "display_type": "horizontal_scroll",
       "priority": 3,
       "thumbnail_style": "landscape",
       "show_progress_bar": false,
       "videos": [
         {
-          "id": "vid_012",
-          "title": "SubaruOutbackOnStreetAndDirt",
-          "description": "Experience the versatility and capability of the Subaru Outback as it conquers both city streets and rugged terrain.",
-          "thumbnail_url": "https://picsum.photos/300/169?random=12",
-          "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
-          "duration": 30,
-          "category": "automotive",
+          "id": "vid_009",
+          "title": "Tears of Steel",
+          "description": "Behind the scenes of groundbreaking visual effects and digital artistry.",
+          "thumbnail_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/TearsOfSteel.jpg",
+          "video_sources": {
+            "progressive": [
+              {
+                "quality": "360p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
+              },
+              {
+                "quality": "720p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
+              }
+            ]
+          },
+          "duration": 734,
+          "category": "documentary",
           "rating": 8.2,
           "release_year": 2024,
-          "content_type": "review"
+          "content_type": "documentary",
+          "thumbnail_aspect_ratio": "landscape"
         },
         {
-          "id": "vid_013",
-          "title": "What Car Can You Get",
-          "description": "Explore the exciting world of automotive possibilities and discover what amazing cars are within your reach.",
-          "thumbnail_url": "https://picsum.photos/300/169?random=13",
-          "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4",
-          "duration": 600,
-          "category": "automotive",
-          "rating": 7.5,
-          "release_year": 2024,
-          "content_type": "documentary"
-        }
-      ]
-    },
-    {
-      "id": "shorts_collection",
-      "title": "Quick Picks",
-      "subtitle": "Perfect for a quick watch",
-      "display_type": "horizontal_scroll",
-      "priority": 4,
-      "thumbnail_style": "portrait",
-      "show_progress_bar": false,
-      "videos": [
-        {
-          "id": "vid_014",
-          "title": "For Bigger Blazes",
-          "description": "Witness the raw power and mesmerizing beauty of fire in this captivating visual journey.",
-          "thumbnail_url": "https://picsum.photos/200/300?random=14",
-          "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-          "duration": 15,
-          "category": "nature",
-          "rating": 8.6,
-          "release_year": 2024,
-          "content_type": "short"
-        },
-        {
-          "id": "vid_015",
-          "title": "For Bigger Escape",
-          "description": "Sometimes the best escape is the one you never saw coming. A thrilling short adventure.",
-          "thumbnail_url": "https://picsum.photos/200/300?random=15",
-          "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-          "duration": 15,
-          "category": "thriller",
-          "rating": 8.1,
-          "release_year": 2024,
-          "content_type": "short"
-        },
-        {
-          "id": "vid_016",
-          "title": "For Bigger Fun",
-          "description": "Life's too short not to have fun. Join us for an adventure that will leave you wanting more.",
-          "thumbnail_url": "https://picsum.photos/200/300?random=16",
-          "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-          "duration": 60,
-          "category": "entertainment",
+          "id": "vid_010",
+          "title": "Subaru Outback On Street And Dirt",
+          "description": "Exploring the versatility and performance of modern automotive engineering.",
+          "thumbnail_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/SubaruOutbackOnStreetAndDirt.jpg",
+          "video_sources": {
+            "progressive": [
+              {
+                "quality": "360p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4"
+              },
+              {
+                "quality": "720p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4"
+              }
+            ]
+          },
+          "duration": 32,
+          "category": "documentary",
           "rating": 7.9,
           "release_year": 2024,
-          "content_type": "short"
+          "content_type": "documentary",
+          "thumbnail_aspect_ratio": "landscape"
         },
         {
-          "id": "vid_017",
-          "title": "For Bigger Joyrides",
-          "description": "Get your adrenaline pumping with this high-octane adventure that will take your breath away.",
-          "thumbnail_url": "https://picsum.photos/200/300?random=17",
-          "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-          "duration": 15,
-          "category": "action",
-          "rating": 8.5,
+          "id": "vid_011",
+          "title": "Volkswagen GTI Review",
+          "description": "An in-depth look at automotive innovation and engineering excellence.",
+          "thumbnail_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/VolkswagenGTIReview.jpg",
+          "video_sources": {
+            "progressive": [
+              {
+                "quality": "360p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4"
+              },
+              {
+                "quality": "720p",
+                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4"
+              }
+            ]
+          },
+          "duration": 25,
+          "category": "documentary",
+          "rating": 8.1,
           "release_year": 2024,
-          "content_type": "short"
-        },
-        {
-          "id": "vid_018",
-          "title": "For Bigger Meltdowns",
-          "description": "An intense emotional journey that explores the depths of human experience and resilience.",
-          "thumbnail_url": "https://picsum.photos/200/300?random=18",
-          "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
-          "duration": 15,
-          "category": "drama",
-          "rating": 7.7,
-          "release_year": 2024,
-          "content_type": "short"
+          "content_type": "documentary",
+          "thumbnail_aspect_ratio": "landscape"
         }
       ]
     }
   ],
 
   "navigation_playlists": {
-    "continue_watching_playlist": ["vid_001", "vid_003", "vid_007"],
-    "trending_playlist": ["vid_002", "vid_004", "vid_005", "vid_006"],
-    "movies_playlist": ["vid_008", "vid_009", "vid_010", "vid_011"],
-    "action_playlist": ["vid_012", "vid_013", "vid_010", "vid_017"],
-    "shorts_playlist": ["vid_014", "vid_015", "vid_016", "vid_017", "vid_018"],
-    "all_content": [
-      "vid_001", "vid_002", "vid_003", "vid_004", "vid_005", "vid_006",
-      "vid_007", "vid_008", "vid_009", "vid_010", "vid_011", "vid_012",
-      "vid_013", "vid_014", "vid_015", "vid_016", "vid_017", "vid_018"
-    ]
+    "continue_watching_playlist": ["vid_001", "vid_002"],
+    "trending_playlist": ["vid_003", "vid_004", "vid_005"],
+    "action_playlist": ["vid_006", "vid_007", "vid_008"],
+    "documentary_playlist": ["vid_009", "vid_010", "vid_011"],
+    "all_content": ["vid_001", "vid_002", "vid_003", "vid_004", "vid_005", "vid_006", "vid_007", "vid_008", "vid_009", "vid_010", "vid_011"]
   },
 
   "video_catalog": {
     "vid_001": {
       "id": "vid_001",
       "title": "Big Buck Bunny",
-      "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+      "video_sources": {
+        "hls_manifest": "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8",
+        "progressive": [
+          {
+            "quality": "360p",
+            "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+          },
+          {
+            "quality": "720p",
+            "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+          }
+        ]
+      },
       "duration": 596,
-      "next_video_id": "vid_003",
+      "next_video_id": "vid_002",
       "previous_video_id": null,
       "playlist_context": "continue_watching_playlist"
     },
     "vid_002": {
       "id": "vid_002",
-      "title": "Sintel",
-      "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
-      "duration": 888,
-      "next_video_id": "vid_004",
-      "previous_video_id": null,
-      "playlist_context": "trending_playlist"
-    },
-    "vid_003": {
-      "id": "vid_003",
       "title": "Elephant's Dream",
-      "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+      "video_sources": {
+        "progressive": [
+          {
+            "quality": "360p",
+            "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+          },
+          {
+            "quality": "720p",
+            "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+          }
+        ]
+      },
       "duration": 653,
-      "next_video_id": "vid_007",
+      "next_video_id": "vid_003",
       "previous_video_id": "vid_001",
       "playlist_context": "continue_watching_playlist"
     },
-    "vid_004": {
-      "id": "vid_004",
-      "title": "Tears of Steel",
-      "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-      "duration": 734,
-      "next_video_id": "vid_005",
+    "vid_003": {
+      "id": "vid_003",
+      "title": "Sintel",
+      "video_sources": {
+        "hls_manifest": "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8",
+        "progressive": [
+          {
+            "quality": "360p",
+            "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
+          },
+          {
+            "quality": "720p",
+            "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
+          }
+        ]
+      },
+      "duration": 888,
+      "next_video_id": "vid_004",
       "previous_video_id": "vid_002",
       "playlist_context": "trending_playlist"
-    },
-    "vid_005": {
-      "id": "vid_005",
-      "title": "VolksWagen GTI Review",
-      "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4",
-      "duration": 25,
-      "next_video_id": "vid_006",
-      "previous_video_id": "vid_004",
-      "playlist_context": "trending_playlist"
-    },
-    "vid_006": {
-      "id": "vid_006",
-      "title": "We Are Going On Bullrun",
-      "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
-      "duration": 30,
-      "next_video_id": null,
-      "previous_video_id": "vid_005",
-      "playlist_context": "trending_playlist"
-    },
-    "vid_007": {
-      "id": "vid_007",
-      "title": "For Bigger Blazes",
-      "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-      "duration": 15,
-      "next_video_id": null,
-      "previous_video_id": "vid_003",
-      "playlist_context": "continue_watching_playlist"
-    },
-    "vid_008": {
-      "id": "vid_008",
-      "title": "For Bigger Escape",
-      "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-      "duration": 15,
-      "next_video_id": "vid_009",
-      "previous_video_id": null,
-      "playlist_context": "movies_playlist"
-    },
-    "vid_009": {
-      "id": "vid_009",
-      "title": "For Bigger Fun",
-      "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-      "duration": 60,
-      "next_video_id": "vid_010",
-      "previous_video_id": "vid_008",
-      "playlist_context": "movies_playlist"
-    },
-    "vid_010": {
-      "id": "vid_010",
-      "title": "For Bigger Joyrides",
-      "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-      "duration": 15,
-      "next_video_id": "vid_011",
-      "previous_video_id": "vid_009",
-      "playlist_context": "movies_playlist"
-    },
-    "vid_011": {
-      "id": "vid_011",
-      "title": "For Bigger Meltdowns",
-      "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
-      "duration": 15,
-      "next_video_id": null,
-      "previous_video_id": "vid_010",
-      "playlist_context": "movies_playlist"
-    },
-    "vid_012": {
-      "id": "vid_012",
-      "title": "SubaruOutbackOnStreetAndDirt",
-      "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
-      "duration": 30,
-      "next_video_id": "vid_013",
-      "previous_video_id": null,
-      "playlist_context": "action_playlist"
-    },
-    "vid_013": {
-      "id": "vid_013",
-      "title": "What Car Can You Get",
-      "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4",
-      "duration": 600,
-      "next_video_id": null,
-      "previous_video_id": "vid_012",
-      "playlist_context": "action_playlist"
-    },
-    "vid_014": {
-      "id": "vid_014",
-      "title": "For Bigger Blazes",
-      "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-      "duration": 15,
-      "next_video_id": "vid_015",
-      "previous_video_id": null,
-      "playlist_context": "shorts_playlist"
-    },
-    "vid_015": {
-      "id": "vid_015",
-      "title": "For Bigger Escape",
-      "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-      "duration": 15,
-      "next_video_id": "vid_016",
-      "previous_video_id": "vid_014",
-      "playlist_context": "shorts_playlist"
-    },
-    "vid_016": {
-      "id": "vid_016",
-      "title": "For Bigger Fun",
-      "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-      "duration": 60,
-      "next_video_id": "vid_017",
-      "previous_video_id": "vid_015",
-      "playlist_context": "shorts_playlist"
-    },
-    "vid_017": {
-      "id": "vid_017",
-      "title": "For Bigger Joyrides",
-      "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-      "duration": 15,
-      "next_video_id": "vid_018",
-      "previous_video_id": "vid_016",
-      "playlist_context": "shorts_playlist"
-    },
-    "vid_018": {
-      "id": "vid_018",
-      "title": "For Bigger Meltdowns",
-      "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
-      "duration": 15,
-      "next_video_id": null,
-      "previous_video_id": "vid_017",
-      "playlist_context": "shorts_playlist"
     }
   }
 }

@@ -8,8 +8,8 @@ class HomeLoading extends HomeState {}
 
 class HomeLoaded extends HomeState {
   final HomeDataEntity homeData;
-  final Map<String, List<VideoEntity>> categoryVideos;
-  final List<VideoEntity> recentlyPlayedVideos;
+  final Map<String, List<VideoModel>> categoryVideos; // Updated to VideoModel
+  final List<VideoModel> recentlyPlayedVideos; // Updated to VideoModel
 
   HomeLoaded(
     this.homeData, {

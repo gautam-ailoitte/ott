@@ -1,675 +1,429 @@
-// lib/src/presentation/screens/video_player/video_player_screen.dart
-import 'dart:async';
-
 import 'package:better_player_plus/better_player_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 
-import '../../../../injection_container.dart' as di;
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_dimensions.dart';
-import '../../../core/constants/app_strings.dart';
-import '../../../core/constants/app_text_styles.dart';
-import '../../../core/utils/extensions.dart';
+import '../../../data/models/video_model.dart';
 import '../../../domain/entities/video_entity.dart';
-import '../../cubits/video_player_cubit/video_player_cubit.dart';
-import '../../widgets/common/error_widget.dart';
-import '../../widgets/common/loading_widget.dart';
 
-class VideoPlayerScreen extends StatelessWidget {
-  final VideoEntity video;
-  final List<VideoEntity>? playlist;
-  final int? currentIndex;
-  final String? playlistContext;
+class VideoPlayerScreen extends StatefulWidget {
+  final List<VideoEntity> videos;
+  final int initialIndex;
 
   const VideoPlayerScreen({
     super.key,
-    required this.video,
-    this.playlist,
-    this.currentIndex,
-    this.playlistContext,
+    required this.videos,
+    required this.initialIndex,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => di.sl<VideoPlayerCubit>()
-        ..initializePlayer(
-          video: video,
-          playlist: playlist,
-          currentIndex: currentIndex,
-          playlistContext: playlistContext,
-        ),
-      child: const _VideoPlayerScreenView(),
-    );
-  }
+  State<VideoPlayerScreen> createState() => _VideoPlayerScreenState();
 }
 
-class _VideoPlayerScreenView extends StatefulWidget {
-  const _VideoPlayerScreenView();
+class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
+  late PageController _pageController;
+  // Map to store controllers for each video index. This is the core of the solution.
+  final Map<int, BetterPlayerController> _controllers = {};
+  late int _currentIndex;
 
-  @override
-  State<_VideoPlayerScreenView> createState() => _VideoPlayerScreenViewState();
-}
-
-class _VideoPlayerScreenViewState extends State<_VideoPlayerScreenView> {
-  PageController? _pageController;
+  // The number of pages to preload ahead of the current page.
+  final int _preloadCount = 1;
 
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: _currentIndex);
+
+    // Initialize the first video and preload the next one.
+    _initializeControllerForIndex(_currentIndex);
+    _preloadNextControllers();
+
     _setFullScreenMode();
   }
 
   @override
   void dispose() {
-    debugPrint("--- Disposing VideoPlayerScreen ---");
+    // Dispose all controllers in the map when the screen is disposed.
+    _controllers.values.forEach((controller) {
+      controller.dispose();
+    });
+    _pageController.dispose();
     _restoreSystemUI();
-    _pageController?.dispose();
     super.dispose();
   }
 
   void _setFullScreenMode() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
   }
 
   void _restoreSystemUI() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
   }
 
-  void _handleBackButton() {
-    debugPrint('Back button pressed');
-    Navigator.of(context).pop();
+  /// Initializes a controller for a specific index, if it's not already initialized.
+  void _initializeControllerForIndex(int index) {
+    if (index < 0 || index >= widget.videos.length) return;
+
+    if (_controllers.containsKey(index)) {
+      return; // Controller already exists.
+    }
+
+    final video = widget.videos[index];
+
+    // Get optimal video URL using the new video sources
+    String? videoUrl;
+
+    if (video is VideoModel && video.videoSources != null) {
+      // For assignment, prefer 360p for memory efficiency
+      videoUrl = video.getOptimalVideoUrl(preferredQuality: '360p');
+    } else {
+      // Fallback to legacy videoUrl
+      videoUrl = video.videoUrl;
+    }
+
+    if (videoUrl == null || videoUrl.isEmpty) return;
+
+    final dataSource = BetterPlayerDataSource(
+      BetterPlayerDataSourceType.network,
+      videoUrl,
+      // Reduced cache configuration for assignment
+      cacheConfiguration: const BetterPlayerCacheConfiguration(
+        useCache: true,
+        maxCacheSize: 30 * 1024 * 1024, // 30MB instead of 100MB
+        maxCacheFileSize: 10 * 1024 * 1024, // 10MB instead of 20MB
+      ),
+    );
+
+    final controller = BetterPlayerController(
+      BetterPlayerConfiguration(
+        // autoPlay should be false initially. We control playback manually.
+        autoPlay: false,
+        looping: true,
+        aspectRatio: 9 / 16,
+        fit: BoxFit.cover,
+        // For HLS/adaptive streams, better_player will handle quality switching automatically
+        autoDetectFullscreenDeviceOrientation: false,
+        // Minimalistic controls for a TikTok/Reels feel.
+        controlsConfiguration: const BetterPlayerControlsConfiguration(
+          showControls: false, // Hide default controls
+        ),
+      ),
+      betterPlayerDataSource: dataSource,
+    );
+
+    // Store the controller in our map.
+    _controllers[index] = controller;
+  }
+
+  /// Preloads controllers for the next [_preloadCount] pages.
+  void _preloadNextControllers() {
+    for (int i = 1; i <= _preloadCount; i++) {
+      _initializeControllerForIndex(_currentIndex + i);
+    }
+  }
+
+  /// Disposes controllers that are outside the visible/preloaded range.
+  void _disposeOldControllers() {
+    // The range of controllers to keep in memory.
+    final int lowerBound = _currentIndex - 1;
+    final int upperBound = _currentIndex + _preloadCount;
+
+    final List<int> keysToDispose = [];
+    _controllers.forEach((key, controller) {
+      if (key < lowerBound || key > upperBound) {
+        keysToDispose.add(key);
+        controller.dispose();
+      }
+    });
+
+    // Remove disposed controllers from the map.
+    for (var key in keysToDispose) {
+      _controllers.remove(key);
+    }
+  }
+
+  /// Handles page changes, controlling video playback and preloading.
+  void _onPageChanged(int index) {
+    // Pause the previous video controller, if it exists.
+    final previousController = _controllers[_currentIndex];
+    previousController?.pause();
+    previousController?.seekTo(Duration.zero); // Rewind
+
+    setState(() {
+      _currentIndex = index;
+    });
+
+    // Play the new current video.
+    final currentController = _controllers[_currentIndex];
+    currentController?.play();
+
+    // Dispose old controllers and preload new ones.
+    _disposeOldControllers();
+    _preloadNextControllers();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: BlocConsumer<VideoPlayerCubit, VideoPlayerState>(
-        listener: (context, state) {
-          if (state is VideoPlayerReady) {
-            // Initialize PageController once
-            if (_pageController == null && state.playlist.isNotEmpty) {
-              _pageController = PageController(initialPage: state.currentIndex);
-              setState(() {}); // Trigger rebuild to show player
+      body: PageView.builder(
+        controller: _pageController,
+        scrollDirection: Axis.vertical,
+        itemCount: widget.videos.length,
+        onPageChanged: _onPageChanged,
+        itemBuilder: (context, index) {
+          // Get the controller from the map.
+          final controller = _controllers[index];
+          final video = widget.videos[index];
+
+          if (controller == null) {
+            // If controller is not ready, show a placeholder.
+            return _buildLoadingPage(video);
+          }
+
+          // When the first frame is ready, start playback if it's the current page.
+          controller.addEventsListener((event) {
+            if (event.betterPlayerEventType ==
+                BetterPlayerEventType.initialized) {
+              if (_currentIndex == index) {
+                controller.play();
+              }
             }
-          }
-        },
-        builder: (context, state) {
-          if (state is VideoPlayerLoading) {
-            return const Center(
-              child: LoadingWidget(message: 'Loading video...'),
-            );
-          } else if (state is VideoPlayerReady) {
-            return _buildVideoPlayer(context, state);
-          } else if (state is VideoPlayerError) {
-            return _buildErrorView(context, state.message);
-          }
-          return const Center(child: LoadingWidget());
+          });
+
+          return _VideoPage(controller: controller, video: video);
         },
       ),
     );
   }
 
-  Widget _buildVideoPlayer(BuildContext context, VideoPlayerReady state) {
-    if (state.playlist.isEmpty) {
-      return const Center(
-        child: AppErrorWidget(message: 'No videos available'),
-      );
-    }
-
-    // Handle single video case
-    if (state.playlist.length == 1) {
-      return VideoPage(
-        video: state.playlist.first,
-        onBack: _handleBackButton,
-        onProgressUpdate: (videoId, position, duration) =>
-            _updateProgress(context, videoId, position, duration),
-      );
-    }
-
-    // Handle playlist case with PageView
-    return PageView.builder(
-      controller: _pageController,
-      scrollDirection: Axis.vertical,
-      itemCount: state.playlist.length,
-      itemBuilder: (context, index) {
-        final video = state.playlist[index];
-        return VideoPage(
-          key: ValueKey('video_${video.id}_$index'),
-          video: video,
-          onBack: _handleBackButton,
-          onProgressUpdate: (videoId, position, duration) =>
-              _updateProgress(context, videoId, position, duration),
-        );
-      },
-    );
-  }
-
-  Widget _buildErrorView(BuildContext context, String message) {
-    return AppErrorWidget(
-      message: message,
-      onRetry: () => Navigator.of(context).pop(),
-    );
-  }
-
-  void _updateProgress(
-    BuildContext context,
-    String videoId,
-    int position,
-    int duration,
-  ) {
-    // Only update progress if context is still mounted
-    if (mounted) {
-      context.read<VideoPlayerCubit>().updateProgress(
-        videoId: videoId,
-        currentPosition: position,
-        totalDuration: duration,
-      );
-    }
-  }
-}
-
-// Individual Video Page Widget - Each manages its own controller
-class VideoPage extends StatefulWidget {
-  final VideoEntity video;
-  final VoidCallback? onBack;
-  final Function(String videoId, int position, int duration)? onProgressUpdate;
-
-  const VideoPage({
-    super.key,
-    required this.video,
-    this.onBack,
-    this.onProgressUpdate,
-  });
-
-  @override
-  State<VideoPage> createState() => _VideoPageState();
-}
-
-class _VideoPageState extends State<VideoPage> {
-  BetterPlayerController? _controller;
-  bool _isInitialized = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeController();
-  }
-
-  @override
-  void dispose() {
-    debugPrint('Disposing video controller for: ${widget.video.title}');
-    _controller?.dispose();
-    super.dispose();
-  }
-
-  void _initializeController() {
-    if (widget.video.videoUrl == null) {
-      debugPrint('Video URL is null for: ${widget.video.title}');
-      return;
-    }
-
-    final dataSource = BetterPlayerDataSource(
-      BetterPlayerDataSourceType.network,
-      widget.video.videoUrl!,
-      cacheConfiguration: const BetterPlayerCacheConfiguration(
-        useCache: true,
-        preCacheSize: 10 * 1024 * 1024, // 10MB
-        maxCacheSize: 100 * 1024 * 1024, // 100MB
-        maxCacheFileSize: 50 * 1024 * 1024, // 50MB
-      ),
-    );
-
-    _controller = BetterPlayerController(
-      BetterPlayerConfiguration(
-        autoPlay: false, // Control via visibility
-        autoDispose: true, // Let Better Player handle disposal
-        looping: true,
-        fit: BoxFit.cover,
-        aspectRatio: 9 / 16, // TikTok aspect ratio
-        allowedScreenSleep: false,
-        handleLifecycle: true, // Built-in app lifecycle handling
-        // playerVisibilityChangedBehavior:
-        deviceOrientationsOnFullScreen: [
-          DeviceOrientation.landscapeLeft,
-          DeviceOrientation.landscapeRight,
-          DeviceOrientation.portraitUp,
-          DeviceOrientation.portraitDown,
+  // A simple loading placeholder
+  Widget _buildLoadingPage(VideoEntity video) {
+    return Container(
+      color: Colors.black,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // You could show a thumbnail here
+          // if (video.thumbnailUrl != null)
+          //   Image.network(video.thumbnailUrl!, fit: BoxFit.cover, width: double.infinity, height: double.infinity,),
+          const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+            ),
+          ),
+          // Also render video info on the loading page for a better UX
+          _buildVideoInfoOverlay(video),
         ],
-        controlsConfiguration: BetterPlayerControlsConfiguration(
-          playerTheme: BetterPlayerTheme.custom,
-          showControls: true,
-          showControlsOnInitialize: false,
-          controlsHideTime: const Duration(seconds: 3),
-          enableFullscreen: true,
-          enablePlaybackSpeed: false,
-          enableSubtitles: false,
-          enableAudioTracks: false,
-          enableQualities: false,
-          enablePip: false,
-          enableRetry: true,
-          enableMute: true,
-          enablePlayPause: true,
-          enableProgressBar: true,
-          enableProgressText: true,
-          customControlsBuilder: (ctrl, onVisibilityChanged) {
-            return CustomVideoControls(
-              controller: ctrl,
-              video: widget.video,
-              onBack: widget.onBack,
-              onControlsVisibilityChanged: onVisibilityChanged,
-              onProgressUpdate: widget.onProgressUpdate,
-            );
-          },
-        ),
-        eventListener: _handlePlayerEvent,
-      ),
-      betterPlayerDataSource: dataSource,
-    );
-
-    // Seek to saved position if available
-    if (widget.video.progressData?.currentPosition != null) {
-      final resumePosition = Duration(
-        seconds: widget.video.progressData!.currentPosition!,
-      );
-      _controller!.seekTo(resumePosition);
-    }
-
-    setState(() {
-      _isInitialized = true;
-    });
-
-    debugPrint('Initialized controller for: ${widget.video.title}');
-  }
-
-  void _handlePlayerEvent(BetterPlayerEvent event) {
-    if (!mounted || _controller == null) return;
-
-    switch (event.betterPlayerEventType) {
-      case BetterPlayerEventType.finished:
-        widget.onProgressUpdate?.call(
-          widget.video.id ?? '',
-          widget.video.duration ?? 0,
-          widget.video.duration ?? 0,
-        );
-        break;
-      case BetterPlayerEventType.progress:
-        if (event.parameters != null) {
-          final Duration? progress = event.parameters!['progress'];
-          final Duration? duration = event.parameters!['duration'];
-          if (progress != null && duration != null) {
-            widget.onProgressUpdate?.call(
-              widget.video.id ?? '',
-              progress.inSeconds,
-              duration.inSeconds,
-            );
-          }
-        }
-        break;
-      default:
-        break;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!_isInitialized || _controller == null) {
-      return Container(
-        width: double.infinity,
-        height: double.infinity,
-        color: AppColors.background,
-        child: const Center(child: LoadingWidget(message: 'Loading video...')),
-      );
-    }
-
-    return VisibilityDetector(
-      key: Key('video_${widget.video.id}'),
-      onVisibilityChanged: (visibilityInfo) {
-        final visiblePercentage = visibilityInfo.visibleFraction * 100;
-
-        if (visiblePercentage > 50) {
-          // Video is more than 50% visible - play
-          _controller?.play();
-          debugPrint('Playing video: ${widget.video.title}');
-        } else {
-          // Video is less than 50% visible - pause
-          _controller?.pause();
-          debugPrint('Pausing video: ${widget.video.title}');
-        }
-      },
-      child: Container(
-        width: double.infinity,
-        height: double.infinity,
-        color: AppColors.background,
-        child: BetterPlayer(controller: _controller!),
       ),
     );
   }
 }
 
-// Custom Controls Widget
-class CustomVideoControls extends StatefulWidget {
+/// A dedicated widget for a single video page.
+class _VideoPage extends StatefulWidget {
   final BetterPlayerController controller;
   final VideoEntity video;
-  final VoidCallback? onBack;
-  final Function(bool)? onControlsVisibilityChanged;
-  final Function(String videoId, int position, int duration)? onProgressUpdate;
 
-  const CustomVideoControls({
-    super.key,
-    required this.controller,
-    required this.video,
-    this.onBack,
-    this.onControlsVisibilityChanged,
-    this.onProgressUpdate,
-  });
+  const _VideoPage({required this.controller, required this.video});
 
   @override
-  State<CustomVideoControls> createState() => _CustomVideoControlsState();
+  State<_VideoPage> createState() => _VideoPageState();
 }
 
-class _CustomVideoControlsState extends State<CustomVideoControls>
-    with TickerProviderStateMixin {
-  bool _isVisible = true;
-  Timer? _hideTimer;
-  late AnimationController _animationController;
-  Duration _currentPosition = Duration.zero;
-  Duration _totalDuration = Duration.zero;
+class _VideoPageState extends State<_VideoPage> {
+  bool _isMuted = false;
+  bool _isPlaying = false;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _animationController.forward();
-    _startHideTimer();
+    // Listen to player events to update our custom UI state.
+    widget.controller.addEventsListener(_onPlayerEvent);
+    _isPlaying = widget.controller.isPlaying() ?? false;
+    // _isMuted = widget.controller.getBetterPlayerDataSource()?.isMuted ?? false;
+  }
 
-    // Listen to player events
-    widget.controller.addEventsListener(_handlePlayerEvent);
+  void _onPlayerEvent(BetterPlayerEvent event) {
+    if (mounted) {
+      setState(() {
+        if (event.betterPlayerEventType == BetterPlayerEventType.play) {
+          _isPlaying = true;
+        } else if (event.betterPlayerEventType == BetterPlayerEventType.pause) {
+          _isPlaying = false;
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
-    _hideTimer?.cancel();
-    _animationController.dispose();
+    widget.controller.removeEventsListener(_onPlayerEvent);
     super.dispose();
   }
 
-  void _handlePlayerEvent(BetterPlayerEvent event) {
-    if (!mounted) return;
-
-    switch (event.betterPlayerEventType) {
-      case BetterPlayerEventType.progress:
-        if (event.parameters != null) {
-          final progress = event.parameters!['progress'] as Duration?;
-          final duration = event.parameters!['duration'] as Duration?;
-          if (progress != null && duration != null) {
-            setState(() {
-              _currentPosition = progress;
-              _totalDuration = duration;
-            });
-            widget.onProgressUpdate?.call(
-              widget.video.id ?? '',
-              progress.inSeconds,
-              duration.inSeconds,
-            );
-          }
-        }
-        break;
-      case BetterPlayerEventType.initialized:
-        if (event.parameters != null) {
-          final duration = event.parameters!['duration'] as Duration?;
-          if (duration != null) {
-            setState(() {
-              _totalDuration = duration;
-            });
-          }
-        }
-        break;
-      default:
-        break;
-    }
-  }
-
-  void _startHideTimer() {
-    _hideTimer?.cancel();
-    _hideTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted) {
-        _hideControls();
+  void _togglePlayback() {
+    setState(() {
+      if (widget.controller.isPlaying()!) {
+        widget.controller.pause();
+      } else {
+        widget.controller.play();
       }
     });
   }
 
-  void _showControls() {
-    if (!_isVisible) {
-      setState(() => _isVisible = true);
-      _animationController.forward();
-      widget.onControlsVisibilityChanged?.call(true);
-    }
-    _startHideTimer();
-  }
-
-  void _hideControls() {
-    if (_isVisible) {
-      setState(() => _isVisible = false);
-      _animationController.reverse();
-      widget.onControlsVisibilityChanged?.call(false);
-    }
-  }
-
-  void _toggleControls() {
-    if (_isVisible) {
-      _hideControls();
-    } else {
-      _showControls();
-    }
+  void _toggleMute() {
+    setState(() {
+      _isMuted = !_isMuted;
+      if (_isMuted) {
+        widget.controller.setVolume(0);
+      } else {
+        widget.controller.setVolume(1.0);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _toggleControls,
-      child: Container(
-        color: Colors.transparent,
-        child: Stack(
-          children: [
-            // Top Controls
-            _buildTopControls(),
-            // Center Play/Pause
-            _buildCenterControls(),
-            // Bottom Controls
-            _buildBottomControls(),
-          ],
-        ),
-      ),
-    );
-  }
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Stack(
+        children: [
+          // The Video Player
+          Center(
+            child: AspectRatio(
+              aspectRatio: 9 / 16,
+              child: BetterPlayer(controller: widget.controller),
+            ),
+          ),
 
-  Widget _buildTopControls() {
-    return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
-      child: FadeTransition(
-        opacity: _animationController,
-        child: Container(
-          padding: const EdgeInsets.all(AppDimensions.spaceM),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.black.withOpacity(0.7), Colors.transparent],
-            ),
-          ),
-          child: SafeArea(
-            child: Row(
-              children: [
-                IconButton(
-                  onPressed: widget.onBack,
-                  icon: const Icon(
-                    Icons.arrow_back_ios,
-                    color: AppColors.textPrimary,
-                    size: AppDimensions.iconSizeL,
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.spaceS),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.video.title ?? 'Video',
-                        style: AppTextStyles.titleMedium.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (widget.video.category != null)
-                        Text(
-                          widget.video.category!,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCenterControls() {
-    return Center(
-      child: FadeTransition(
-        opacity: _animationController,
-        child: GestureDetector(
-          onTap: () {
-            if (widget.controller.isPlaying() ?? false) {
-              widget.controller.pause();
-            } else {
-              widget.controller.play();
-            }
-            _showControls();
-          },
-          child: Container(
-            padding: const EdgeInsets.all(AppDimensions.spaceL),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.6),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              (widget.controller.isPlaying() ?? false)
-                  ? Icons.pause_rounded
-                  : Icons.play_arrow_rounded,
-              color: AppColors.textPrimary,
-              size: 48,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomControls() {
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: FadeTransition(
-        opacity: _animationController,
-        child: Container(
-          padding: const EdgeInsets.all(AppDimensions.spaceM),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Progress Bar
-                _buildProgressBar(),
-                const SizedBox(height: AppDimensions.spaceS),
-                // Duration and Instructions
-                Row(
-                  children: [
-                    _buildTimeDisplay(),
-                    const Spacer(),
-                    Text(
-                      AppStrings.swipeDownForNext,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+          // Custom Controls Overlay
+          GestureDetector(
+            onTap: _togglePlayback,
+            child: Container(
+              color: Colors.transparent, // Make the whole area tappable
+              child: Center(
+                // Show a play/pause icon that fades in and out
+                child: AnimatedOpacity(
+                  opacity: _isPlaying ? 0.0 : 1.0,
+                  duration: const Duration(milliseconds: 300),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      shape: BoxShape.circle,
                     ),
-                  ],
+                    child: const Icon(
+                      Icons.play_arrow,
+                      color: Colors.white,
+                      size: 60,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Video Info and Back Button
+          _buildVideoInfoOverlay(widget.video),
+
+          // Mute Button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 16,
+            right: 16,
+            child: GestureDetector(
+              onTap: _toggleMute,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  _isMuted ? Icons.volume_off : Icons.volume_up,
+                  color: AppColors.textPrimary,
+                  size: 24,
+                ),
+              ),
+            ),
+          ),
+
+          // Back Button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 16,
+            left: 16,
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.arrow_back_ios_new, // A more modern back icon
+                  color: AppColors.textPrimary,
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Helper widget for video info to avoid code duplication.
+Widget _buildVideoInfoOverlay(VideoEntity video) {
+  return Positioned(
+    bottom: 20,
+    left: 16,
+    right: 80, // Give some space for action buttons on the right
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (video.title != null) ...[
+          Text(
+            video.title!,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              shadows: [
+                Shadow(
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
+                  color: Colors.black54,
                 ),
               ],
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProgressBar() {
-    return SliderTheme(
-      data: SliderTheme.of(context).copyWith(
-        activeTrackColor: AppColors.primary,
-        inactiveTrackColor: AppColors.progressBackground,
-        thumbColor: AppColors.primary,
-        overlayColor: AppColors.primary.withOpacity(0.2),
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-        trackHeight: 3,
-      ),
-      child: Slider(
-        value: _totalDuration.inMilliseconds > 0
-            ? (_currentPosition.inMilliseconds / _totalDuration.inMilliseconds)
-                  .clamp(0.0, 1.0)
-            : 0.0,
-        onChanged: (value) {
-          final newPosition = Duration(
-            milliseconds: (value * _totalDuration.inMilliseconds).round(),
-          );
-          widget.controller.seekTo(newPosition);
-        },
-        onChangeStart: (_) => _hideTimer?.cancel(),
-        onChangeEnd: (_) => _startHideTimer(),
-      ),
-    );
-  }
-
-  Widget _buildTimeDisplay() {
-    return Text(
-      '${_currentPosition.inSeconds.toReadableDuration()} / ${_totalDuration.inSeconds.toReadableDuration()}',
-      style: AppTextStyles.bodySmall.copyWith(
-        color: AppColors.textPrimary,
-        fontWeight: FontWeight.w500,
-      ),
-    );
-  }
+          const SizedBox(height: 8),
+        ],
+        if (video.description != null) ...[
+          Text(
+            video.description!,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 14,
+              shadows: [
+                Shadow(
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
+                  color: Colors.black54,
+                ),
+              ],
+            ),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ],
+    ),
+  );
 }
