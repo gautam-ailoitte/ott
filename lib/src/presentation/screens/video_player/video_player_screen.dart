@@ -9,7 +9,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../data/models/video_model.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
-  final List<VideoModel> videos; // ✅ Now using VideoModel directly
+  final List<VideoModel> videos;
   final int initialIndex;
 
   const VideoPlayerScreen({
