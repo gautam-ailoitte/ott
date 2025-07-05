@@ -22,31 +22,71 @@ class VideoPlayerScreen extends StatefulWidget {
   State<VideoPlayerScreen> createState() => _VideoPlayerScreenState();
 }
 
-class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
+class _VideoPlayerScreenState extends State<VideoPlayerScreen>
+    with WidgetsBindingObserver {
   late PageController _pageController;
   final Map<int, BetterPlayerController> _controllers = {};
   late int _currentIndex;
   final int _preloadCount = 1;
+
+  bool _wasPlayingBeforePause = false;
 
   @override
   void initState() {
     super.initState();
     log('VideoPlayerScreen initialized with ${widget.videos.length} videos');
     log(widget.videos.map((v) => v.title).toString());
-    log(widget.videos.toString());
+    WidgetsBinding.instance.addObserver(this);
+
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: _currentIndex);
 
     _initializeControllerForIndex(_currentIndex);
+    final initialController = _controllers[_currentIndex];
+    if (initialController != null) {
+      initialController.addEventsListener((event) {
+        if (event.betterPlayerEventType == BetterPlayerEventType.initialized) {
+          if (mounted) {
+            initialController.play();
+          }
+        }
+      });
+    }
     _preloadNextControllers();
     _setFullScreenMode();
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    final controller = _controllers[_currentIndex];
+    if (controller == null) {
+      return;
+    }
+
+    if (state == AppLifecycleState.resumed) {
+      if (_wasPlayingBeforePause) {
+        controller.play();
+      }
+    } else {
+      _wasPlayingBeforePause = controller.isPlaying() ?? false;
+
+      controller.pause();
+    }
+  }
+
+  @override
   void dispose() {
-    _controllers.values.forEach((controller) {
+    WidgetsBinding.instance.removeObserver(this);
+
+    final allControllers = _controllers.values.toList();
+    for (var controller in allControllers) {
+      controller.pause();
       controller.dispose();
-    });
+    }
+    _controllers.clear();
+
     _pageController.dispose();
     _restoreSystemUI();
     super.dispose();
@@ -101,6 +141,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       final controller = BetterPlayerController(
         BetterPlayerConfiguration(
           autoPlay: false,
+          autoDispose: false,
           looping: true,
           aspectRatio: 9 / 16,
           fit: BoxFit.cover,
@@ -129,16 +170,16 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     final int lowerBound = _currentIndex - 1;
     final int upperBound = _currentIndex + _preloadCount;
 
-    final List<int> keysToDispose = [];
-    _controllers.forEach((key, controller) {
+    final List<int> keysToRemove = [];
+    for (var key in _controllers.keys) {
       if (key < lowerBound || key > upperBound) {
-        keysToDispose.add(key);
-        controller.dispose();
+        keysToRemove.add(key);
       }
-    });
+    }
 
-    for (var key in keysToDispose) {
-      _controllers.remove(key);
+    for (final key in keysToRemove) {
+      final controller = _controllers.remove(key);
+      controller?.dispose();
     }
   }
 
@@ -157,7 +198,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     _preloadNextControllers();
     _disposeOldControllers();
 
-    setState(() {});
+    // setState(() {});  //todo: icon will not change but let it be for now
   }
 
   @override
